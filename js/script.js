@@ -238,15 +238,16 @@ window.addEventListener('DOMContentLoaded', function () {
             statusMessage.src=message.loading;
             statusMessage.style.cssText=`
             display: block;
-            margin: auto;
+            margin: 0 auto;
             `;
 
             form.insertAdjacentElement('afterend', statusMessage);
+//переписано под использование Fetch API
 
-            const req = new XMLHttpRequest();
-            req.open('POST', 'server.php');
+            /*const req = new XMLHttpRequest();
+            req.open('POST', 'server.php');*/
 
-            req.setRequestHeader('Content-type', 'application/json');
+            /*req.setRequestHeader('Content-type', 'application/json');*/ //убрал из-за использования fetch
             /*req.setRequestHeader('Content-type', 'multipart/form-data');*/ //писать не надо т.к. устанавливается автоматически при отправке через form-data
             const formData = new FormData(form);
 
@@ -255,11 +256,35 @@ window.addEventListener('DOMContentLoaded', function () {
                 obj[key] = value;
             })
 
-            const json = JSON.stringify(obj);
-            req.send(json);
+            /*const json = JSON.stringify(obj);*/ //не используется с fetch
+            fetch('server1.php',{
+                method: "POST",
+                headers: {
+                    'Content-type': 'application/json'
+                },
+                body : JSON.stringify(obj)
+
+            })
+                .then(data => data.text())
+                .then(data=>{
+                console.log(data);
+                showThanksModal(message.success);
+
+
+                statusMessage.remove();
+
+            })
+                .catch(()=>{
+                showThanksModal(message.failure);
+
+            }).finally(()=>{
+                form.reset();
+
+            })
+            /*req.send(json);*/ // убрано для использования fetch
             /*req.send(formData);*/
 
-            req.addEventListener('load', () => {
+            /*req.addEventListener('load', () => {          //обработка результата запроса
                 if (req.status === 200) {
                     console.log(req.response);
                     showThanksModal(message.success);
@@ -270,7 +295,7 @@ window.addEventListener('DOMContentLoaded', function () {
                 } else {
                     showThanksModal(message.failure);
                 }
-            })
+            })*/
         });
     }
 
