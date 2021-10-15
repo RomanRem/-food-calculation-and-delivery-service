@@ -90,7 +90,6 @@ window.addEventListener('DOMContentLoaded', function () {
 
         }
 
-
     }
 
     setClock('.timer', deadLine);
@@ -116,10 +115,8 @@ window.addEventListener('DOMContentLoaded', function () {
         clearInterval(modalTimerId);
     }
 
-
-
     modal.addEventListener('click', (e) => {
-        if (e.target === modal || e.target.getAttribute('data-close')=='') {
+        if (e.target === modal || e.target.getAttribute('data-close') == '') {
             closeModal();
         }
     });
@@ -140,7 +137,6 @@ window.addEventListener('DOMContentLoaded', function () {
     }
 
     window.addEventListener('scroll', showModalByScroll);
-
 
     //создание классов для карточек
 
@@ -184,37 +180,44 @@ window.addEventListener('DOMContentLoaded', function () {
             this.parent.append(el);
         }
     }
+    const getResource = async (url) => {
+        const res = await fetch(url);
+        if (!res.ok){
+           throw new Error(`Could not fetch ${url}, status: ${res.status}`);
+        }
 
-    new MenuCard(
-        "img/tabs/vegy.jpg",
-        "vegy",
-        'Меню "Фитнес"',
-        'Меню "Фитнес" - это новый подход к приготовлению блюд: больше свежих овощей и фруктов. Продукт активных и здоровых людей. Это абсолютно новый продукт с оптимальной ценой и высоким качеством!',
-        10,
-        '.menu .container',
-        /*'menu__item', //rest 3
-        'big'*/
-    ).render(); //одноразовый вызов объекта
 
-    new MenuCard(
-        "img/tabs/elite.jpg",
-        "elite",
-        'Меню “Премиум”',
-        'Меню “Постное” - это тщательный подбор ингредиентов: полное отсутствие продуктов животного происхождения, молоко из миндаля, овса, кокоса или гречки, правильное количество белков за счет тофу и импортных вегетарианских стейков.',
-        9,
-        '.menu .container'
-        /* 'menu__item'*/
-    ).render(); //одноразовый вызов объекта
+        return await res.json();
+    };
+    getResource('http://localhost:3000/menu')
+        .then (data=>{
+            data.forEach(({img, altimg, title, descr, price}) =>{
+                new MenuCard(img, altimg, title, descr, price, '.menu .container').render();
+            });
 
-    new MenuCard(
-        "img/tabs/post.jpg",
-        "post",
-        'Меню "Постное"',
-        'В меню “Премиум” мы используем не только красивый дизайн упаковки, но и качественное исполнение блюд. Красная рыба, морепродукты, фрукты - ресторанное меню без похода в ресторан!',
-        12,
-        '.menu .container'
-        /*'menu__item'*/
-    ).render(); //одноразовый вызов объекта
+        });
+    // вариант без шаблонизации - если надо создать элементы один раз
+    /*getResource('http://localhost:3000/menu')
+        .then(data => createCard(data));
+        function createCard(data){
+            data.forEach(({img, altimg, title, descr, price}) =>{
+                const element = document.createElement('div');
+
+                element.classList.add('menu__item');
+
+                element.innerHTML =`
+                <img src=${img} alt=${altimg}>
+                <h3 class="menu__item-subtitle">${title}</h3>
+                <div class="menu__item-descr">${descr}</div>
+                <div class="menu__item-divider"></div>
+                <div class="menu__item-price">
+                    <div class="menu__item-cost">Цена:</div>
+                    <div class="menu__item-total"><span>${price}</span> руб/день</div>
+                </div>
+                `;
+                document.querySelector('.menu .container').append(element);
+            });
+        }*/
 
     //Forms отправка данных на сервер
 
@@ -227,16 +230,26 @@ window.addEventListener('DOMContentLoaded', function () {
     }
 
     forms.forEach(i => {
-        postData(i);
+        bindPostData(i);
     })
+    const postData = async (url, data) => {
+        const res = await fetch(url, {
+            method: "POST",
+            headers: {
+                'Content-type': 'application/json'
+            },
+            body: data
+        });
+        return await res.json();
+    };
 
-    function postData(form) {
+    function bindPostData(form) {
         form.addEventListener('submit', (e) => {
             e.preventDefault();
 
             const statusMessage = document.createElement('img');
-            statusMessage.src=message.loading;
-            statusMessage.style.cssText=`
+            statusMessage.src = message.loading;
+            statusMessage.style.cssText = `
             display: block;
             margin: 0 auto;
             `;
@@ -244,68 +257,40 @@ window.addEventListener('DOMContentLoaded', function () {
             form.insertAdjacentElement('afterend', statusMessage);
 //переписано под использование Fetch API
 
-            /*const req = new XMLHttpRequest();
-            req.open('POST', 'server.php');*/
-
-            /*req.setRequestHeader('Content-type', 'application/json');*/ //убрал из-за использования fetch
-            /*req.setRequestHeader('Content-type', 'multipart/form-data');*/ //писать не надо т.к. устанавливается автоматически при отправке через form-data
             const formData = new FormData(form);
-
-            const obj = {}
-            formData.forEach(function (value, key) { // переборка объекта formData, для помещения его в новый простой объект и последующей обработки json
+            const json=JSON.stringify(Object.fromEntries(formData.entries())); //элегантный способ
+            /*const obj = {};
+//не элегантный formData.forEach(function (value, key) { // переборка объекта formData, для помещения его в новый простой объект и последующей обработки json
                 obj[key] = value;
-            })
+            });*/
 
-            /*const json = JSON.stringify(obj);*/ //не используется с fetch
-            fetch('server.php',{
-                method: "POST",
-                headers: {
-                    'Content-type': 'application/json'
-                },
-                body : JSON.stringify(obj)
+            postData('http://localhost:3000/requests', json)
 
-            })
-                .then(data => data.text())
-                .then(data=>{
-                console.log(data);
-                showThanksModal(message.success);
+                .then(data => {
+                    console.log(data);
+                    showThanksModal(message.success);
 
+                    statusMessage.remove();
 
-                statusMessage.remove();
+                })
+                .catch(() => {
+                    showThanksModal(message.failure);
 
-            })
-                .catch(()=>{
-                showThanksModal(message.failure);
-
-            }).finally(()=>{
+                }).finally(() => {
                 form.reset();
 
             })
-            /*req.send(json);*/ // убрано для использования fetch
-            /*req.send(formData);*/
 
-            /*req.addEventListener('load', () => {          //обработка результата запроса
-                if (req.status === 200) {
-                    console.log(req.response);
-                    showThanksModal(message.success);
-                    form.reset();
-
-                        statusMessage.remove();
-
-                } else {
-                    showThanksModal(message.failure);
-                }
-            })*/
         });
     }
 
-          //смена модального окна при отправке формы, добавление спиннера
+    //смена модального окна при отправке формы, добавление спиннера
     function showThanksModal(message) {
         const prevModalDialog = document.querySelector('.modal__dialog');
 
         prevModalDialog.classList.add('hide');
         openModal();
-        const  thanksModal=document.createElement('div');
+        const thanksModal = document.createElement('div');
         thanksModal.classList.add('modal__dialog');
         thanksModal.innerHTML = `
             <div class='modal__content'>
@@ -314,15 +299,16 @@ window.addEventListener('DOMContentLoaded', function () {
             </div>
         `;
         document.querySelector('.modal').append(thanksModal);
-        setTimeout(()=>{
+        setTimeout(() => {
             thanksModal.remove();
             prevModalDialog.classList.add('show');
             prevModalDialog.classList.remove('hide');
             closeModal();
-        },4000);
+        }, 4000);
     }
+
     fetch('http://localhost:3000/menu')// start json-server // npx json-server --watch db.json
 
-        .then(data=>data.json())
+        .then(data => data.json())
         .then(res => console.log(res));
 });
