@@ -257,7 +257,7 @@ window.addEventListener('DOMContentLoaded', function () {
             })
 
             /*const json = JSON.stringify(obj);*/ //не используется с fetch
-            fetch('server1.php',{
+            fetch('server.php',{
                 method: "POST",
                 headers: {
                     'Content-type': 'application/json'
@@ -321,4 +321,8 @@ window.addEventListener('DOMContentLoaded', function () {
             closeModal();
         },4000);
     }
+    fetch('http://localhost:3000/menu')// start json-server // npx json-server --watch db.json
+
+        .then(data=>data.json())
+        .then(res => console.log(res));
 });
