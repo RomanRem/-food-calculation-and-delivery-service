@@ -180,21 +180,28 @@ window.addEventListener('DOMContentLoaded', function () {
             this.parent.append(el);
         }
     }
+
     const getResource = async (url) => {
         const res = await fetch(url);
-        if (!res.ok){
-           throw new Error(`Could not fetch ${url}, status: ${res.status}`);
+        if (!res.ok) {
+            throw new Error(`Could not fetch ${url}, status: ${res.status}`);
         }
-
 
         return await res.json();
     };
-    getResource('http://localhost:3000/menu')
+    /*getResource('http://localhost:3000/menu')
         .then (data=>{
             data.forEach(({img, altimg, title, descr, price}) =>{
                 new MenuCard(img, altimg, title, descr, price, '.menu .container').render();
             });
 
+        });*/
+    //axios
+    axios.get('http://localhost:3000/menu')
+        .then(data => {
+            data.data.forEach(({img, altimg, title, descr, price}) => {
+                new MenuCard(img, altimg, title, descr, price, '.menu .container').render();
+            });
         });
     // вариант без шаблонизации - если надо создать элементы один раз
     /*getResource('http://localhost:3000/menu')
@@ -258,7 +265,7 @@ window.addEventListener('DOMContentLoaded', function () {
 //переписано под использование Fetch API
 
             const formData = new FormData(form);
-            const json=JSON.stringify(Object.fromEntries(formData.entries())); //элегантный способ
+            const json = JSON.stringify(Object.fromEntries(formData.entries())); //элегантный способ
             /*const obj = {};
 //не элегантный formData.forEach(function (value, key) { // переборка объекта formData, для помещения его в новый простой объект и последующей обработки json
                 obj[key] = value;
@@ -311,4 +318,51 @@ window.addEventListener('DOMContentLoaded', function () {
 
         .then(data => data.json())
         .then(res => console.log(res));
+
+    // создание простого слайдера
+
+    const slides = document.querySelectorAll(".offer__slide"),
+        prev = document.querySelector(".offer__slider-prev"),
+        next = document.querySelector(".offer__slider-next"),
+        total = document.querySelector('#total'),
+        current = document.querySelector('#current');
+
+    let slideIndex = 1;
+
+    showSlides(slideIndex);
+        if(slides.length<10){
+            total.textContent=`0${slides.length}`;
+
+        }else {
+            total.textContent= slides.length;
+        };
+
+    function showSlides(n) {
+        if (n>slides.length){
+            slideIndex = 1;
+        }
+        if (n<1){
+            slideIndex=slides.length;
+        }
+        slides.forEach(item=> item.style.display = 'none');
+        slides[slideIndex-1].style.display = 'block';
+
+        if(slides.length<10){
+            current.textContent=`0${slideIndex}`;
+
+        }else {
+            total.textContent= slideIndex;
+        };
+    }
+    function plusSlides(n) {
+        showSlides(slideIndex+=n);
+    }
+    prev.addEventListener('click', ()=>{
+        plusSlides(-1);
+
+    });
+    next.addEventListener('click', ()=>{
+        plusSlides(1);
+
+    });
 });
