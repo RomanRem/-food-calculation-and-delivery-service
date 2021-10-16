@@ -415,6 +415,7 @@ window.addEventListener('DOMContentLoaded', function () {
          slidesField.style.transform = `translateX(-${offset}px)`;
 
      };
+     //регулярка
      function repl (str){
          return +str.replace(/\D/g, '');
 
