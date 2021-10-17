@@ -34,7 +34,7 @@ function slider(){
     });
     slider.style.position = 'relative';
 
-    const indicators = document.createElement('ol');
+    const indicators = document.createElement('ol'),
     dots = [];
     indicators.classList.add('carousel-indicators');
     indicators.style.cssText = `
