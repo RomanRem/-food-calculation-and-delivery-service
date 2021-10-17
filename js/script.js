@@ -513,10 +513,40 @@ window.addEventListener('DOMContentLoaded', function () {
     //калькулятор активности
 
     const result = document.querySelector('.calculating__result span');
-    let sex = 'female',                      //значения по умолчанию
-        height, weight, age,
-        ratio = 1.375;
+    let sex, height, weight, age, ratio;
 
+        //логика локального хранилища
+    if (localStorage.getItem('sex')){
+        sex = localStorage.getItem('sex');
+    }else {
+        sex ='female';
+        localStorage.setItem('sex', 'female');
+    }
+
+    if (localStorage.getItem('ratio')){
+        ratio = localStorage.getItem('ratio');
+    }else {
+        ratio =1.375;
+        localStorage.setItem('ratio', 1.375);
+    }
+
+    //инициализация калькулятора, для перезаписи значений по умолчанию в локальном хранилище
+    function initLocalSettings(selector, activeClass){
+        const elements = document.querySelectorAll(selector);
+
+        elements.forEach(elem => {
+            elem.classList.remove(activeClass);
+            if (elem.getAttribute('id')=== localStorage.getItem('sex')){
+                elem.classList.add(activeClass);
+            }
+            if (elem.getAttribute('data-ratio')=== localStorage.getItem('ratio')){
+                elem.classList.add(activeClass);
+            }
+        });
+
+    }
+    initLocalSettings('#gender div', 'calculating__choose-item_active');
+    initLocalSettings('.calculating__choose_big div', 'calculating__choose-item_active');
     function calcTotal() {
         if (!sex || !height || !weight || !age || !ratio) {   //проверка на заполнение всех полей
             result.textContent = '____';
@@ -531,17 +561,19 @@ window.addEventListener('DOMContentLoaded', function () {
 
     calcTotal();
 
-    function getStaticInfo(parentSelector, activeClass) {
-        const elements = document.querySelectorAll(`${parentSelector} div`);
+    function getStaticInfo(selector, activeClass) {
+        const elements = document.querySelectorAll(selector);
 
-// убираем баг с нажатием полей вокруг кнопок
 
-        elements.forEach(elem => {
+
+        elements.forEach(elem => {                              // убираем баг с нажатием полей вокруг кнопок
             elem.addEventListener('click', (e) => {
                 if (e.target.getAttribute('data-ratio')) {
                     ratio = +e.target.getAttribute('data-ratio');
+                    localStorage.setItem('ratio', +e.target.getAttribute('data-ratio')); //добавление состояния в локальное хранилище
                 } else {
                     sex = e.target.getAttribute('id');
+                    localStorage.setItem('sex', e.target.getAttribute('id'));
                 }
 
                 elements.forEach(elem => {
@@ -557,8 +589,8 @@ window.addEventListener('DOMContentLoaded', function () {
     }
 
 
-    getStaticInfo('#gender', 'calculating__choose-item_active');
-    getStaticInfo('.calculating__choose_big', 'calculating__choose-item_active');
+    getStaticInfo('#gender div', 'calculating__choose-item_active');
+    getStaticInfo('.calculating__choose_big div', 'calculating__choose-item_active');
 
     //обработка инпутов в формах ввода
     function getDynamicInfo(selector) {
