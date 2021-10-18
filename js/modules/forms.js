@@ -1,4 +1,6 @@
 'use strict';
+import {openModal, clodeModal} from './modal';
+
 function forms (){
     //Forms отправка данных на сервер
 
@@ -90,4 +92,4 @@ function showThanksModal(message) {
     }, 4000);
 }
 
-module.exports = forms;
+export default forms;
