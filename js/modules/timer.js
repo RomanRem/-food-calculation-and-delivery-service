@@ -1,7 +1,7 @@
-'use strict';
-function timer (){
+
+function timer (id, deadLine){
     //Timer
-    const deadLine = '2021-12-10';
+
 
     function getTimeRemaining(endtime) {
         const t = Date.parse(endtime) - Date.parse(new Date()),
@@ -53,7 +53,7 @@ function timer (){
 
     }
 
-    setClock('.timer', deadLine);
+    setClock(id, deadLine);
 
 }
 
