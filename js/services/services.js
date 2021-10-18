@@ -50,3 +50,5 @@ async function getResource(url) {
     }*/
 export {postData};
 export {getResource};
+
+//примеры с Fetch API, Async/Await, Axios
